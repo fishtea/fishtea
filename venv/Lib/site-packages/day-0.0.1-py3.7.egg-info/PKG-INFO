@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: day
+Version: 0.0.1
+Summary: what's day is today
+Home-page: https://github.com/Sweeterio/day
+Author: Sweeterio
+Author-email: sweeterio@qq.com
+License: UNKNOWN
+Description: what's day is today?
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
