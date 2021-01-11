@@ -247,7 +247,7 @@ class SemData(object):
 
 
 if __name__ == '__main__':
-    file = "元气壁纸12月.xlsx"
+    file = "元气壁纸1月.xlsx"
     sem = SemData(file)
 
     ###

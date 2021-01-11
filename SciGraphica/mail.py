@@ -11,6 +11,8 @@ import random,os,shutil
 import zipfile
 import re,requests
 import gzip
+from core.Merage import Merage
+import pandas as pd
 
 class down_email():
     def __init__(self,user,password,eamil_server):
@@ -58,12 +60,24 @@ class down_email():
         if charset:
             value = value.decode(charset)
         return value
-
+    #清空文件夹
+    def clean_floder(self,status = True):
+        path = os.getcwd()
+        names = "邮件下载数据"
+        filepath = os.path.join(path, names)
+        if status:
+            if not os.path.exists(filepath):
+                os.mkdir(filepath)
+            else:
+                shutil.rmtree(filepath)
+                os.mkdir(filepath)
     # 解析邮件,获取附件
     def get_att(self,msg_in, str_day,nums):
         str_to_day = str(datetime.date.today())  # 日期赋值
+        print("-----------------------正在处理邮件-----------------------------")
         if str_day == 'fc-report@baidu.com':
             name = "baiduSem"
+            print("正在处理百度邮件.....................")
             for (index,part) in enumerate(msg_in.walk()):
                 filename = "%s_%s_%s.csv"%(name,str_to_day,nums)
                 path = os.getcwd()
@@ -80,8 +94,10 @@ class down_email():
                     filepath = os.path.join(cname, filename)
                     with open(filepath, 'wb') as f:
                         f.write(part.get_payload(decode=True))
+                print("百度邮件附件.......下载成功!")
         elif str_day == 'no-reply@ucmail.360.cn':
             name = "360Sem"
+            print("正在处理360邮件.....................")
             for (index, part) in enumerate(msg_in.walk()):
                 content = self.get_content(part)
                 url = re.findall("href=\'(http://shanghai.xstore.qihu.com/.*?)\'",content)[0]
@@ -97,10 +113,10 @@ class down_email():
                 html = requests.get(url,headers=headers)
                 with open(file_name, 'wb') as f:
                     f.write(html.content)
-
-
+                print("360邮件附件.......下载成功!")
         elif str_day == 'sogou_support@bizmail.p4p.sogou.com':
             name = "sogouSem"
+            print("正在处理sogou邮件.....................")
             for (index, part) in enumerate(msg_in.walk()):
                 path = os.getcwd()
                 if part.get_content_maintype() == 'multipart':
@@ -114,25 +130,27 @@ class down_email():
                 file_path = os.path.join(path,file_name)
                 #print(file_path)
                 if bool(filename):
-                    filepath = os.path.join(path, file_name)
+                    filepath = os.path.join(path, "邮件下载数据")
+                    filepath = os.path.join(filepath,file_name)
                     with open(filepath, 'wb') as f:
                         f.write(part.get_payload(decode=True))
                         f.close()
+                print("搜狗邮件附件.......下载成功!")
                 try:
                     if os.path.exists(filepath):
-                        #print(filepath)
                         name = self.un_gz(filepath)
-                        newname = "%s.csv"%(name)
-                        os.rename(name, newname)
-
-                        _file = os.path.join(path, newname)
-
-                        name = "邮件下载数据"
-                        cname = os.path.join(path, name)
-
-                        shutil.move(_file,cname)
+                        newname = "%s.csv" % (name)
+                        filepath = os.path.join(path, "邮件下载数据")
+                        newpath = os.path.join(filepath,newname)
+                        if os.path.exists(newpath):
+                            os.remove(newpath)
+                        try:
+                            os.rename(name, newpath)
+                        except:
+                            print("重命名文件不成功！")
                 except :
                     print("文件解压不成功！")
+
         else:
             print("%s........不是SEM数据邮件"%(str_day))
 
@@ -155,6 +173,7 @@ class down_email():
         # 返回邮件数量和占用空间:
         print('Messages: %s. Size: %s' % self.server.stat())
         # list()返回所有邮件的编号:
+
         resp, mails, octets = self.server.list()
         # 可以查看返回的列表类似[b'1 82923', b'2 2184', ...]
         index = len(mails)
@@ -200,7 +219,11 @@ if __name__ == '__main__':
         # 邮箱对应的pop服务器的监听端口。改成自己邮箱的pop服务器的端口；qq邮箱不需要修改此值
         pop_server_port = 995
         email_class=down_email(user=email_address,password=email_password,eamil_server=pop_server_host)
+        #清空文件夹
+        email_class.clean_floder()
+        #下载附件
         email_class.run_ing()
+
     except Exception as e:
         import traceback
         ex_msg = '{exception}'.format(exception=traceback.format_exc())

@@ -211,12 +211,7 @@ class Pdf(Store):
         (data_360, data_baidu, data_sogou) = self.getPdfreader()
         #获取所有有PDF的数据，下一步进行各渠道拆分
         pdfAdminData = self.getAdminPDF()
-        #百度PDF阅读器后端数据
-        _baidu_AdminData = pdfAdminData.loc[(pdfAdminData['子渠道'] == 1) | (pdfAdminData['子渠道'] == 15)]
-        #搜狗PDF阅读器后端数据
-        _sogou_AdminData = pdfAdminData.loc[(pdfAdminData['子渠道'] == 2) ]
-        #360PDF阅读器后端数据
-        _s360_AdminData = pdfAdminData.loc[(pdfAdminData['子渠道'] == 3)]
+
 
         baidu_AdminData = self.tooladmin(_baidu_AdminData)
         sogou_AdminData = self.tooladmin(_sogou_AdminData)
