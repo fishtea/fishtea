@@ -21,6 +21,7 @@ class down_email():
         self.password = password
         self.pop3_server = eamil_server
         self.days = days
+        self.mail_nums = 0
 
     # 获得msg的编码
     def guess_charset(self,msg):
@@ -83,10 +84,8 @@ class down_email():
     # 解析邮件,获取附件
     def get_att(self,msg_in, str_day,nums,str_to_day):
         #str_to_day = str(datetime.date.today())  # 日期赋
-        print("---------------------------------------------------")
         if str_day == 'fc-report@baidu.com':
             name = "baiduSem"
-            print("正在处理百度邮件.....................")
             for (index,part) in enumerate(msg_in.walk()):
                 filename = "%s_%s_%s.csv"%(name,str_to_day,nums)
                 path = os.getcwd()
@@ -100,14 +99,15 @@ class down_email():
                     continue
                 #filename = part.get_filename()
                 if bool(filename):
-                    print("正在下载百度附件.............")
                     filepath = os.path.join(cname, filename)
-                    with open(filepath, 'wb') as f:
-                        f.write(part.get_payload(decode=True))
-                print("百度邮件附件.......下载成功!")
+                    try:
+                        with open(filepath, 'wb') as f:
+                            f.write(part.get_payload(decode=True))
+                            f.close()
+                    except:
+                        print("下载百度附件失败！")
         elif str_day == 'no-reply@ucmail.360.cn':
             name = "360Sem"
-            print("正在处理360邮件.....................")
             for (index, part) in enumerate(msg_in.walk()):
                 content = self.get_content(part)
                 url = re.findall("href=\'(http://shanghai.xstore.qihu.com/.*?)\'",content)[0]
@@ -121,13 +121,14 @@ class down_email():
                     "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36"
                 }
                 html = requests.get(url,headers=headers)
-                print("正在下载360附件.............")
-                with open(file_name, 'wb') as f:
-                    f.write(html.content)
-                print("360邮件附件.......下载成功!")
+                try:
+                    with open(file_name, 'wb') as f:
+                        f.write(html.content)
+                        f.close()
+                except:
+                    print("下载360附件失败！")
         elif str_day == 'sogou_support@bizmail.p4p.sogou.com':
             name = "sogouSem"
-            print("正在处理sogou邮件.....................")
             for (index, part) in enumerate(msg_in.walk()):
                 path = os.getcwd()
                 if part.get_content_maintype() == 'multipart':
@@ -141,13 +142,14 @@ class down_email():
                 file_path = os.path.join(path,file_name)
                 #print(file_path)
                 if bool(filename):
-                    print("正在下载sogou附件.............")
                     filepath = os.path.join(path, "邮件下载数据")
                     filepath = os.path.join(filepath,file_name)
-                    with open(filepath, 'wb') as f:
-                        f.write(part.get_payload(decode=True))
-                        f.close()
-                print("搜狗邮件附件.......下载成功!")
+                    try:
+                        with open(filepath, 'wb') as f:
+                            f.write(part.get_payload(decode=True))
+                            f.close()
+                    except:
+                        print("下载sogou附件失败！")
                 try:
                     if os.path.exists(filepath):
                         name = self.un_gz(filepath)
@@ -164,7 +166,6 @@ class down_email():
                     print("文件解压不成功！")
         else:
             print("%s........不是SEM数据邮件"%(str_day))
-
 
     def run_ing(self):
         str_day = str(datetime.date.today())# 日期赋值
@@ -187,6 +188,8 @@ class down_email():
 
         resp, mails, octets = self.server.list()
         # 可以查看返回的列表类似[b'1 82923', b'2 2184', ...]
+        print("-----------------------------------------------")
+        print("开始下载附件.......")
         index = len(mails)
         for i in range(index, 0, -1):# 倒序遍历邮件
         # for i in range(1, index + 1):# 顺序遍历邮件
@@ -213,6 +216,7 @@ class down_email():
                 break # 倒叙用break
                 # continue # 顺叙用continue
             else:
+                self.mail_nums = self.mail_nums + 1
                 # 获取附件
                 index = str(octets)
                 attach_file=self.get_att(msg,From,index,date2)
@@ -220,6 +224,20 @@ class down_email():
         # 可以根据邮件索引号直接从服务器删除邮件:
         # self.server.dele(7)
         self.server.quit()
+        print("邮件处理完毕.")
+
+    def email_number(self):
+        print("-----------------------------------------------")
+        print('共处理邮件数据：%s'%self.mail_nums)
+        path = os.getcwd()
+        name = "邮件下载数据"
+        count = 0
+        filepath = os.path.join(path, name)
+        for file in os.listdir(filepath):  # file 表示的是文件名
+            count = count + 1
+        print('共下载邮件附件：%s' % count)
+
+
 if __name__ == '__main__':
     try:
         # 要进行邮件接收的邮箱。改成自己的邮箱
@@ -241,7 +259,11 @@ if __name__ == '__main__':
         #清空文件夹
         email_class.clean_floder()
         #下载附件
+
         email_class.run_ing()
+        ##检查邮件数，并检查生成邮件数
+        email_class.email_number()
+
 
     except Exception as e:
         import traceback

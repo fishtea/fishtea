@@ -31,7 +31,7 @@ class SemData(object):
     """
     def read_admindata(self):
         try:
-            data = pd.read_excel(self.files, sheet_name="后台数据")
+            data = pd.read_excel(self.files, sheet_name="后台数据",index_col="日期")
             return data
         except Exception as err:
             print("err %s: " % err)

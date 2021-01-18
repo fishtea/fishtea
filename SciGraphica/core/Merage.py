@@ -77,7 +77,7 @@ class Merage():
         data.fillna(0,inplace=True)
         data.drop_duplicates(subset=["日期","账户名称","推广计划"],inplace=True)
         data.sort_values(by=['日期','账户名称'],inplace=True)
-        data = data.drop(data[data['账户名称'] == '无数据'].index)
+        #data = data.drop(data[data['账户名称'] == '无数据'].index)
         return data
 
 
